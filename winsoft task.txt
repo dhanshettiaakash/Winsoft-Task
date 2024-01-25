@@ -1,0 +1,91 @@
+using System.Data;
+using System.Windows;
+using System;
+
+public partial class MainForm : Form
+{
+  
+
+    private void CreateEmployeeTable()
+    {
+        try
+        {
+            string createTableQuery = "CREATE TABLE IF NOT EXISTS Employee (" +
+                "Id INT PRIMARY KEY IDENTITY(1,1)," +
+                "Name NVARCHAR(50) NOT NULL," +
+                "Age INT," +
+                "Salary DECIMAL(10,2)" +
+                ")";
+
+            using (SqlCommand command = new SqlCommand(createTableQuery, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error creating Employee table: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+
+
+    private void LoadData()
+    {
+        try
+        {
+            string selectQuery = "SELECT * FROM Employee";
+
+            DataTable dataTable = new DataTable();
+
+            using (SqlDataAdapter adapter = new SqlDataAdapter(selectQuery, connection))
+            {
+                adapter.Fill(dataTable);
+            }
+
+            dataGridView1.DataSource = dataTable;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error loading data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+
+    private void InsertData(string name, int age, decimal salary)
+    {
+        try
+        {
+            string insertQuery = "INSERT INTO Employee (Name, Age, Salary) VALUES (@Name, @Age, @Salary)";
+
+            using (SqlCommand command = new SqlCommand(insertQuery, connection))
+            {
+                command.Parameters.AddWithValue("@Name", name);
+                command.Parameters.AddWithValue("@Age", age);
+                command.Parameters.AddWithValue("@Salary", salary);
+
+                command.ExecuteNonQuery();
+            }
+
+            LoadData();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error inserting data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+  
+
+    private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+    {
+        try
+        {
+            connection.Close();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error closing connection: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+}
